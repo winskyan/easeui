@@ -6,15 +6,14 @@ import android.media.ThumbnailUtils;
 import android.net.Uri;
 import android.text.TextUtils;
 
-import com.baidu.mapapi.map.MapView;
 import com.hyphenate.EMCallBack;
 import com.hyphenate.EMValueCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMCmdMessageBody;
 import com.hyphenate.chat.EMGroup;
-import com.hyphenate.chat.EMImageMessageBody;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessageBody;
+import com.hyphenate.chat.EMMessageReaction;
 import com.hyphenate.chat.EMTextMessageBody;
 import com.hyphenate.chat.EMTranslationResult;
 import com.hyphenate.easeui.R;
@@ -29,6 +28,9 @@ import com.hyphenate.util.PathUtil;
 
 import java.io.File;
 import java.io.FileOutputStream;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 
 public class EaseHandleMessagePresenterImpl extends EaseHandleMessagePresenter {
     private static final String TAG = EaseChatLayout.class.getSimpleName();
@@ -259,6 +261,54 @@ public class EaseHandleMessagePresenterImpl extends EaseHandleMessagePresenter {
         EMTranslationResult result = EMClient.getInstance().translationManager().getTranslationResult(message.getMsgId());
         result.setShowTranslation(false);
         EMClient.getInstance().translationManager().updateTranslationResult(result);
+    }
+
+    @Override
+    public void addReaction(EMMessage message, String reaction) {
+        EMClient.getInstance().chatManager().asyncAddReaction(message.getMsgId(), reaction, new EMCallBack() {
+            @Override
+            public void onSuccess() {
+                if (isActive()) {
+                    runOnUI(() -> mView.addReactionMessageSuccess(message));
+                }
+            }
+
+            @Override
+            public void onError(int error, String errorMsg) {
+                if (isActive()) {
+                    runOnUI(() -> mView.addReactionMessageFail(message, error, errorMsg));
+                }
+            }
+
+            @Override
+            public void onProgress(int progress, String status) {
+
+            }
+        });
+    }
+
+    @Override
+    public void removeReaction(EMMessage message, String reaction) {
+        EMClient.getInstance().chatManager().asyncRemoveReaction(message.getMsgId(), reaction, new EMCallBack() {
+            @Override
+            public void onSuccess() {
+                if (isActive()) {
+                    runOnUI(() -> mView.removeReactionMessageSuccess(message));
+                }
+            }
+
+            @Override
+            public void onError(int error, String errorMsg) {
+                if (isActive()) {
+                    runOnUI(() -> mView.removeReactionMessageFail(message, error, errorMsg));
+                }
+            }
+
+            @Override
+            public void onProgress(int progress, String status) {
+
+            }
+        });
     }
 
     /**

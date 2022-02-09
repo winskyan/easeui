@@ -3,7 +3,6 @@ package com.hyphenate.easeui.widget.chatrow;
 import android.content.Context;
 import android.text.Spannable;
 import android.text.Spanned;
-import android.text.TextUtils;
 import android.text.style.URLSpan;
 import android.view.View;
 import android.widget.ImageView;
@@ -19,44 +18,48 @@ import com.hyphenate.easeui.manager.EaseDingMessageHelper;
 import com.hyphenate.easeui.utils.EaseSmileUtils;
 
 public class EaseChatRowText extends EaseChatRow {
-	private TextView contentView;
+    private TextView contentView;
     private TextView translationContentView;
     private ImageView translationStatusView;
     private View translationContainer;
 
+
     public EaseChatRowText(Context context, boolean isSender) {
-		super(context, isSender);
-	}
+        super(context, isSender);
+    }
 
     public EaseChatRowText(Context context, EMMessage message, int position, Object adapter) {
-		super(context, message, position, adapter);
-	}
+        super(context, message, position, adapter);
+    }
 
-	@Override
-	protected void onInflateView() {
-		inflater.inflate(!showSenderType ? R.layout.ease_row_received_message
+    @Override
+    protected void onInflateView() {
+        inflater.inflate(!showSenderType ? R.layout.ease_row_received_message
                 : R.layout.ease_row_sent_message, this);
-	}
+    }
 
-	@Override
-	protected void onFindViewById() {
-		contentView = (TextView) findViewById(R.id.tv_chatcontent);
+    @Override
+    protected void onFindViewById() {
+        contentView = (TextView) findViewById(R.id.tv_chatcontent);
         translationContentView = (TextView) findViewById(R.id.tv_subContent);
         translationStatusView = (ImageView) findViewById(R.id.translation_status);
         translationContainer = (View) findViewById(R.id.subBubble);
-	}
+
+        reactionContentView = findViewById(R.id.tv_subReactionContent);
+        reactionContainerGroup = findViewById(R.id.reaction_group);
+    }
 
     @Override
     public void onSetUpView() {
         EMTextMessageBody txtBody = (EMTextMessageBody) message.getBody();
-        if(txtBody != null){
+        if (txtBody != null) {
             Spannable span = EaseSmileUtils.getSmiledText(context, txtBody.getMessage());
             // 设置内容
             contentView.setText(span, BufferType.SPANNABLE);
             contentView.setOnLongClickListener(new OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    contentView.setTag(R.id.action_chat_long_click,true);
+                    contentView.setTag(R.id.action_chat_long_click, true);
                     if (itemClickListener != null) {
                         return itemClickListener.onBubbleLongClick(v, message);
                     }
@@ -65,14 +68,14 @@ public class EaseChatRowText extends EaseChatRow {
             });
             replaceSpan();
             EMTranslationResult result = EMClient.getInstance().translationManager().getTranslationResult(message.getMsgId());
-            if(result != null){
-                if(result.showTranslation()) {
+            if (result != null) {
+                if (result.showTranslation()) {
                     translationContainer.setVisibility(View.VISIBLE);
                     translationContentView.setText(result.translatedText());
                     translationContainer.setOnLongClickListener(new OnLongClickListener() {
                         @Override
                         public boolean onLongClick(View v) {
-                            contentView.setTag(R.id.action_chat_long_click,true);
+                            contentView.setTag(R.id.action_chat_long_click, true);
                             if (itemClickListener != null) {
                                 return itemClickListener.onBubbleLongClick(v, message);
                             }
@@ -86,6 +89,7 @@ public class EaseChatRowText extends EaseChatRow {
             } else {
                 translationContainer.setVisibility(View.GONE);
             }
+            onSetupReactionView();
         }
     }
 
@@ -151,14 +155,15 @@ public class EaseChatRowText extends EaseChatRow {
 
     /**
      * set progress and status view visible or gone
+     *
      * @param progressVisible
      * @param statusVisible
      */
     private void setStatus(int progressVisible, int statusVisible) {
-        if(progressBar != null) {
+        if (progressBar != null) {
             progressBar.setVisibility(progressVisible);
         }
-        if(statusView != null) {
+        if (statusView != null) {
             statusView.setVisibility(statusVisible);
         }
     }
@@ -166,10 +171,10 @@ public class EaseChatRowText extends EaseChatRow {
     private EaseDingMessageHelper.IAckUserUpdateListener userUpdateListener = list -> onAckUserUpdate(list.size());
 
     public void onAckUserUpdate(final int count) {
-        if(ackedView == null) {
+        if (ackedView == null) {
             return;
         }
-        ackedView.post(()->{
+        ackedView.post(() -> {
             if (isSender()) {
                 ackedView.setVisibility(VISIBLE);
                 ackedView.setText(String.format(getContext().getString(R.string.group_ack_read_count), count));

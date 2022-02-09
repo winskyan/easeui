@@ -3,6 +3,7 @@ package com.hyphenate.easeui.interfaces;
 import android.view.View;
 
 import com.hyphenate.chat.EMMessage;
+import com.hyphenate.easeui.domain.EaseReactionEmojiconEntity;
 
 /**
  * 消息列表中的点击事件
@@ -68,4 +69,20 @@ public interface MessageListItemClickListener{
 	 * @param progress
 	 */
 	void onMessageInProgress(EMMessage message, int progress);
+
+	/**
+	 * remove reaction
+	 *
+	 * @param message
+	 * @param reactionEntity
+	 */
+	void onRemoveReaction(EMMessage message, EaseReactionEmojiconEntity reactionEntity);
+
+	/**
+	 * add reaction
+	 *
+	 * @param message
+	 * @param reactionEntity
+	 */
+	void onAddReaction(EMMessage message, EaseReactionEmojiconEntity reactionEntity);
 }

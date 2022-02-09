@@ -177,4 +177,11 @@ public interface IChatLayout {
      * @param translateListener
      */
     void setOnTranslateListener(OnTranslateMessageListener translateListener);
+
+    /**
+     * 设置表情评论监听
+     *
+     * @param reactionListener
+     */
+    void setOnReactionListener(OnReactionMessageListener reactionListener);
 }

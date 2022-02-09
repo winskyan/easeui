@@ -47,4 +47,5 @@
     <color name="ease_contact_color_item_header">#ff333333</color>
     <color name="ease_contact_color_item_header_bg">#fff2f2f2</color>
     <color name="ease_contact_color_item_title">#ff333333</color>
+    <color name="ease_message_unsend_menu_txt">#FF14CC</color>
 </resources>

@@ -208,4 +208,9 @@
         </attr>
     </declare-styleable>
 
+    <declare-styleable name="EaseChatReactionView">
+        <!-- 是否为发送者 -->
+        <attr name="ease_chat_item_sender" format="boolean" />
+    </declare-styleable>
+
 </resources>

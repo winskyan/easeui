@@ -1,7 +1,7 @@
 package com.hyphenate.easeui.modules.interfaces;
 
 import com.hyphenate.easeui.modules.chat.interfaces.OnMenuChangeListener;
-import com.hyphenate.easeui.modules.menu.EasePopupWindowHelper;
+import com.hyphenate.easeui.modules.menu.EaseMessageMenuHelper;
 import com.hyphenate.easeui.modules.menu.MenuItemBean;
 
 public interface IPopupWindow {
@@ -56,5 +56,5 @@ public interface IPopupWindow {
      * 返回菜单帮助类
      * @return
      */
-    EasePopupWindowHelper getMenuHelper();
+    EaseMessageMenuHelper getMenuHelper();
 }

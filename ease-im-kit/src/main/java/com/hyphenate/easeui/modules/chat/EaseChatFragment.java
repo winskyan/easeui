@@ -26,6 +26,7 @@ import com.hyphenate.easeui.modules.chat.interfaces.OnAddMsgAttrsBeforeSendEvent
 import com.hyphenate.easeui.modules.chat.interfaces.OnChatLayoutListener;
 import com.hyphenate.easeui.modules.chat.interfaces.OnChatRecordTouchListener;
 import com.hyphenate.easeui.modules.chat.interfaces.OnMenuChangeListener;
+import com.hyphenate.easeui.modules.chat.interfaces.OnReactionMessageListener;
 import com.hyphenate.easeui.modules.chat.interfaces.OnTranslateMessageListener;
 import com.hyphenate.easeui.modules.menu.EasePopupWindowHelper;
 import com.hyphenate.easeui.modules.menu.MenuItemBean;
@@ -40,7 +41,7 @@ import com.hyphenate.util.VersionUtils;
 
 import java.io.File;
 
-public class EaseChatFragment extends EaseBaseFragment implements OnChatLayoutListener, OnMenuChangeListener, OnAddMsgAttrsBeforeSendEvent, OnChatRecordTouchListener, OnTranslateMessageListener {
+public class EaseChatFragment extends EaseBaseFragment implements OnChatLayoutListener, OnMenuChangeListener, OnAddMsgAttrsBeforeSendEvent, OnChatRecordTouchListener, OnTranslateMessageListener, OnReactionMessageListener {
     protected static final int REQUEST_CODE_MAP = 1;
     protected static final int REQUEST_CODE_CAMERA = 2;
     protected static final int REQUEST_CODE_LOCAL = 3;
@@ -104,6 +105,7 @@ public class EaseChatFragment extends EaseBaseFragment implements OnChatLayoutLi
         chatLayout.setOnAddMsgAttrsBeforeSendEvent(this);
         chatLayout.setOnChatRecordTouchListener(this);
         chatLayout.setOnTranslateListener(this);
+        chatLayout.setOnReactionListener(this);
     }
 
     public void initData() {
@@ -392,6 +394,26 @@ public class EaseChatFragment extends EaseBaseFragment implements OnChatLayoutLi
 
     @Override
     public void translateMessageFail(EMMessage message, int code, String error) {
+
+    }
+
+    @Override
+    public void addReactionMessageSuccess(EMMessage message) {
+
+    }
+
+    @Override
+    public void addReactionMessageFail(EMMessage message, int code, String error) {
+
+    }
+
+    @Override
+    public void removeReactionMessageSuccess(EMMessage message) {
+
+    }
+
+    @Override
+    public void removeReactionMessageFail(EMMessage message, int code, String error) {
 
     }
 }

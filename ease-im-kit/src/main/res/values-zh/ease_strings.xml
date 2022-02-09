@@ -163,5 +163,6 @@
     <string name="action_translate">翻译</string>
     <string name="action_reTranslate">重译</string>
     <string name="action_hide">隐藏</string>
+    <string name="action_reaction">表情评论</string>
 
 </resources>

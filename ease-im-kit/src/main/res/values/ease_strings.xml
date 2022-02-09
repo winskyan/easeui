@@ -150,7 +150,7 @@
 
     <string name="action_copy">Copy</string>
     <string name="action_forward">Forward</string>
-    <string name="action_recall">Recall</string>
+    <string name="action_recall">Unsend</string>
     <string name="action_delete">Delete</string>
     <string name="action_multi_select">Choose multiple</string>
     <string name="delete_voice">Delete voice</string>
@@ -163,5 +163,5 @@
     <string name="action_translate">Translate</string>
     <string name="action_reTranslate">Retranslate</string>
     <string name="action_hide">Hide</string>
-
+    <string name="action_reaction">Reactions</string>
 </resources>

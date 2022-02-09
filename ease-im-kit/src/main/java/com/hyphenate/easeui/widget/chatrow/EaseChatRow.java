@@ -18,11 +18,16 @@ import com.hyphenate.EMCallBack;
 import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMMessage.Direct;
+import com.hyphenate.chat.EMMessageReaction;
 import com.hyphenate.easeui.EaseIM;
 import com.hyphenate.easeui.R;
 import com.hyphenate.easeui.adapter.EaseBaseAdapter;
 import com.hyphenate.easeui.domain.EaseAvatarOptions;
+import com.hyphenate.easeui.domain.EaseEmojicon;
+import com.hyphenate.easeui.domain.EaseReactionEmojiconEntity;
 import com.hyphenate.easeui.interfaces.MessageListItemClickListener;
+import com.hyphenate.easeui.model.EaseMessageMenuData;
+import com.hyphenate.easeui.modules.chat.EaseChatReactionView;
 import com.hyphenate.easeui.modules.chat.model.EaseChatItemStyleHelper;
 import com.hyphenate.easeui.modules.chat.EaseChatMessageListLayout;
 import com.hyphenate.easeui.modules.chat.model.EaseChatSetStyle;
@@ -31,7 +36,9 @@ import com.hyphenate.easeui.utils.EaseUserUtils;
 import com.hyphenate.easeui.widget.EaseImageView;
 import com.hyphenate.util.EMLog;
 
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 /**
  * base chat row view
@@ -107,6 +114,9 @@ public abstract class EaseChatRow extends LinearLayout {
     protected MessageListItemClickListener itemClickListener;
     private EaseChatRowActionCallback itemActionCallback;
 
+    protected View reactionContainerGroup;
+    protected EaseChatReactionView reactionContentView;
+
     public EaseChatRow(Context context, boolean isSender) {
         super(context);
         this.context = context;
@@ -159,6 +169,21 @@ public abstract class EaseChatRow extends LinearLayout {
 
         mainThreadHandler = new Handler(Looper.getMainLooper());
         onFindViewById();
+    }
+
+    public void resetViewState() {
+        if (null != progressBar) {
+            progressBar.setVisibility(GONE);
+        }
+        if (null != statusView) {
+            statusView.setVisibility(GONE);
+        }
+        if (null != ackedView) {
+            ackedView.setVisibility(GONE);
+        }
+        if (null != deliveredView) {
+            deliveredView.setVisibility(GONE);
+        }
     }
 
     protected void setLayoutStyle() {
@@ -214,18 +239,13 @@ public abstract class EaseChatRow extends LinearLayout {
             chatCallback = new EaseChatCallback();
         }
         msg.setMessageStatusCallback(chatCallback);
-        mainThreadHandler.post(new Runnable() {
-            @Override
-            public void run() {
-                onViewUpdate(msg);
-            }
-        });
+        onViewUpdate(msg);
     }
 
     /**
      * set property according message and position
      * the method should be called by child
-     * 
+     *
      * @param message
      * @param position
      */
@@ -438,7 +458,7 @@ public abstract class EaseChatRow extends LinearLayout {
         chatCallback = new EaseChatCallback();
         if(bubbleLayout != null){
             bubbleLayout.setOnClickListener(new OnClickListener() {
-    
+
                 @Override
                 public void onClick(View v) {
                     if (itemClickListener != null && itemClickListener.onBubbleClick(message)){
@@ -449,9 +469,9 @@ public abstract class EaseChatRow extends LinearLayout {
                     }
                 }
             });
-    
+
             bubbleLayout.setOnLongClickListener(new OnLongClickListener() {
-    
+
                 @Override
                 public boolean onLongClick(View v) {
                     if (itemClickListener != null) {
@@ -479,7 +499,7 @@ public abstract class EaseChatRow extends LinearLayout {
 
         if(userAvatarView != null){
             userAvatarView.setOnClickListener(new OnClickListener() {
-    
+
                 @Override
                 public void onClick(View v) {
                     if (itemClickListener != null) {
@@ -492,7 +512,7 @@ public abstract class EaseChatRow extends LinearLayout {
                 }
             });
             userAvatarView.setOnLongClickListener(new OnLongClickListener() {
-                
+
                 @Override
                 public boolean onLongClick(View v) {
                     if(itemClickListener != null){
@@ -532,6 +552,59 @@ public abstract class EaseChatRow extends LinearLayout {
             default:
                 EMLog.i(TAG, "default");
                 break;
+        }
+    }
+
+    protected void onSetupReactionView() {
+        if (null == message || null == reactionContainerGroup ||
+                null == reactionContentView) {
+            return;
+        }
+        List<EMMessageReaction> messageReactions = message.getMessageReaction();
+        if (null != messageReactions && messageReactions.size() > 0) {
+            EMLog.i(TAG, "reaction messageReactions=" + messageReactions);
+            List<EaseReactionEmojiconEntity> list = new ArrayList<>(messageReactions.size());
+            EaseReactionEmojiconEntity entity;
+            EaseEmojicon emojicon;
+            for (EMMessageReaction messageReaction : messageReactions) {
+                entity = new EaseReactionEmojiconEntity();
+                emojicon = EaseMessageMenuData.getReactionDataMap().get(messageReaction.getReaction());
+                if (emojicon != null) {
+                    entity.setEmojicon(emojicon);
+                    entity.setCount(messageReaction.getUserCount());
+                    entity.setUserList(messageReaction.getUserList());
+                    list.add(entity);
+                }
+            }
+            if (0 != list.size()) {
+                if (View.VISIBLE != reactionContainerGroup.getVisibility()) {
+                    reactionContainerGroup.setVisibility(View.VISIBLE);
+                }
+                reactionContentView.updateData(list, message.getMsgId());
+                reactionContentView.setOnReactionItemListener(new EaseChatReactionView.OnReactionItemListener() {
+                    @Override
+                    public void removeReaction(EaseReactionEmojiconEntity reactionEntity) {
+                        if (itemClickListener != null) {
+                            itemClickListener.onRemoveReaction(message, reactionEntity);
+                        }
+                    }
+
+                    @Override
+                    public void addReaction(EaseReactionEmojiconEntity reactionEntity) {
+                        if (itemClickListener != null) {
+                            itemClickListener.onAddReaction(message, reactionEntity);
+                        }
+                    }
+                });
+            } else {
+                if (View.GONE != reactionContainerGroup.getVisibility()) {
+                    reactionContainerGroup.setVisibility(View.GONE);
+                }
+            }
+        } else {
+            if (View.GONE != reactionContainerGroup.getVisibility()) {
+                reactionContainerGroup.setVisibility(View.GONE);
+            }
         }
     }
 
@@ -623,7 +696,7 @@ public abstract class EaseChatRow extends LinearLayout {
 
     /**
      * setup view
-     * 
+     *
      */
     protected abstract void onSetUpView();
 

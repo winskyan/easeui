@@ -27,6 +27,7 @@ import com.hyphenate.chat.EMConversation;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.easeui.R;
 import com.hyphenate.easeui.adapter.EaseMessageAdapter;
+import com.hyphenate.easeui.domain.EaseReactionEmojiconEntity;
 import com.hyphenate.easeui.interfaces.MessageListItemClickListener;
 import com.hyphenate.easeui.interfaces.OnItemClickListener;
 import com.hyphenate.easeui.manager.EaseMessageTypeSetManager;
@@ -440,6 +441,20 @@ public class EaseChatMessageListLayout extends RelativeLayout implements IChatMe
             public void onMessageInProgress(EMMessage message, int progress) {
                 if(messageListItemClickListener != null) {
                     messageListItemClickListener.onMessageInProgress(message, progress);
+                }
+            }
+
+            @Override
+            public void onRemoveReaction(EMMessage message, EaseReactionEmojiconEntity reactionEntity) {
+                if (messageListItemClickListener != null) {
+                    messageListItemClickListener.onRemoveReaction(message, reactionEntity);
+                }
+            }
+
+            @Override
+            public void onAddReaction(EMMessage message, EaseReactionEmojiconEntity reactionEntity) {
+                if (messageListItemClickListener != null) {
+                    messageListItemClickListener.onAddReaction(message, reactionEntity);
                 }
             }
         });

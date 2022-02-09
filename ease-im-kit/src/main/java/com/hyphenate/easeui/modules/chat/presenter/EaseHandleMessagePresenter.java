@@ -169,5 +169,21 @@ public abstract class EaseHandleMessagePresenter extends EaseBasePresenter {
      * @param message
      */
     public abstract void hideTranslate(EMMessage message);
+
+    /**
+     * 添加表情评论
+     *
+     * @param message
+     * @param reaction
+     */
+    public abstract void addReaction(EMMessage message, String reaction);
+
+    /**
+     * 删除表情评论
+     *
+     * @param message
+     * @param reaction
+     */
+    public abstract void removeReaction(EMMessage message, String reaction);
 }
 

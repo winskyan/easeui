@@ -5,6 +5,9 @@ import com.hyphenate.easeui.domain.EaseEmojicon;
 import com.hyphenate.easeui.domain.EaseEmojicon.Type;
 import com.hyphenate.easeui.utils.EaseSmileUtils;
 
+import java.util.HashMap;
+import java.util.Map;
+
 public class EaseDefaultEmojiconDatas {
     
     private static String[] emojis = new String[]{
@@ -91,6 +94,8 @@ public class EaseDefaultEmojiconDatas {
         EaseEmojicon[] datas = new EaseEmojicon[icons.length];
         for(int i = 0; i < icons.length; i++){
             datas[i] = new EaseEmojicon(icons[i], emojis[i], Type.NORMAL);
+            datas[i].setName("name" + (i + 1));
+            datas[i].setIdentityCode("em" + (1000 + i + 1));
         }
         return datas;
     }
@@ -98,4 +103,19 @@ public class EaseDefaultEmojiconDatas {
     public static EaseEmojicon[] getData(){
         return DATA;
     }
+
+    private static final Map<String, EaseEmojicon> DATA_MAP = createDataMap();
+
+    private static Map<String, EaseEmojicon> createDataMap() {
+        Map<String, EaseEmojicon> emojiconsMap = new HashMap<>(getData().length);
+        for (EaseEmojicon icon : getData()) {
+            emojiconsMap.put(icon.getIdentityCode(), icon);
+        }
+        return emojiconsMap;
+    }
+
+    public static Map<String, EaseEmojicon> getDataMap() {
+        return DATA_MAP;
+    }
+
 }

@@ -81,4 +81,36 @@ public interface IHandleMessageView extends ILoadDataView {
      * @param error
      */
     void translateMessageFail(EMMessage message, int code, String error);
+
+    /**
+     * 表情评论成功
+     *
+     * @param message
+     */
+    void addReactionMessageSuccess(EMMessage message);
+
+    /**
+     * 情评论失败
+     *
+     * @param message
+     * @param code
+     * @param error
+     */
+    void addReactionMessageFail(EMMessage message, int code, String error);
+
+    /**
+     * 删除表情评论成功
+     *
+     * @param message
+     */
+    void removeReactionMessageSuccess(EMMessage message);
+
+    /**
+     * 情评论失败
+     *
+     * @param message
+     * @param code
+     * @param error
+     */
+    void removeReactionMessageFail(EMMessage message, int code, String error);
 }
