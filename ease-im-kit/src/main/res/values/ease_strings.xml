@@ -166,4 +166,7 @@
     <string name="action_hide">Hide</string>
     <string name="action_label">Label</string>
     <string name="action_reaction">Reactions</string>
+    <string name="ease_number_ninety_nine_more">99+</string>
+    <string name="ease_number_point_ninety_nine_more">&#183;&#183;&#183; 99+</string>
+    <string name="ease_number_more">&#183;&#183;&#183; %1$d</string>
 </resources>

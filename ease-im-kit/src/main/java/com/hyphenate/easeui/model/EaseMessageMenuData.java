@@ -2,13 +2,11 @@ package com.hyphenate.easeui.model;
 
 import com.hyphenate.easeui.R;
 import com.hyphenate.easeui.domain.EaseEmojicon;
-import com.hyphenate.easeui.domain.EaseEmojicon.Type;
 
 import java.util.HashMap;
 import java.util.Map;
 
 public class EaseMessageMenuData {
-
     private static final int[] REACTION_ICONS = new int[]{
             R.drawable.emoji_1,
             R.drawable.emoji_2,
@@ -96,7 +94,7 @@ public class EaseMessageMenuData {
         EaseEmojicon emojicon;
         String id;
         for (int i = 0; i < REACTION_ICONS.length; i++) {
-            emojicon = new EaseEmojicon(REACTION_ICONS[i], "", Type.NORMAL);
+            emojicon = new EaseEmojicon(REACTION_ICONS[i], "", EaseEmojicon.Type.NORMAL);
             id = "emoji_" + (i + 1);
             emojicon.setIdentityCode(id);
             emojiconsMap.put(id, emojicon);
@@ -107,6 +105,4 @@ public class EaseMessageMenuData {
     public static Map<String, EaseEmojicon> getReactionDataMap() {
         return REACTION_DATA_MAP;
     }
-
-
 }

@@ -8,6 +8,7 @@ import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMMessage;
 import com.hyphenate.chat.EMOptions;
 import com.hyphenate.easeui.domain.EaseAvatarOptions;
+import com.hyphenate.easeui.domain.EaseReactionOptions;
 import com.hyphenate.easeui.manager.EaseChatPresenter;
 import com.hyphenate.easeui.manager.EaseConfigsManager;
 import com.hyphenate.easeui.model.EaseNotifier;
@@ -34,6 +35,10 @@ public class EaseIM {
      * chat avatar options which we can easily control the style
      */
     private EaseAvatarOptions avatarOptions;
+    /**
+     * Whether to  show reaction view
+     */
+    private EaseReactionOptions reactionOptions;
     /**
      * application context
      */
@@ -222,6 +227,20 @@ public class EaseIM {
     public EaseIM setAvatarOptions(EaseAvatarOptions avatarOptions) {
         this.avatarOptions = avatarOptions;
         return this;
+    }
+
+
+    /**
+     * Set to reaction options
+     *
+     * @param reactionOptions
+     */
+    public void setReactionOptions(EaseReactionOptions reactionOptions) {
+        this.reactionOptions = reactionOptions;
+    }
+
+    public EaseReactionOptions getReactionOptions() {
+        return reactionOptions;
     }
 
     /**

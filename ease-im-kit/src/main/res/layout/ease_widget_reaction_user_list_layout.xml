@@ -4,7 +4,7 @@
     android:id="@+id/ll_face_container"
     android:layout_width="100dp"
     android:layout_height="wrap_content"
-    android:background="@drawable/ease_chat_bubble_translate_bg">
+    android:background="@drawable/ease_chat_bubble_bg">
 
     <com.hyphenate.easeui.widget.EaseRecyclerView
         android:id="@+id/rv_list_user_list"

@@ -27,6 +27,7 @@
             android:id="@+id/bubble"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
             android:layout_marginRight="@dimen/margin_chat_activity"
             android:layout_toLeftOf="@id/iv_userhead"
             android:layout_below="@id/tv_userid">
@@ -40,7 +41,20 @@
                 app:ease_shape_type="rectangle"
                 app:ease_radius="@dimen/ease_chat_image_corner_radius" />
 
-        </RelativeLayout>	
+        </RelativeLayout>
+
+        <com.hyphenate.easeui.modules.chat.EaseChatReactionView
+            android:id="@+id/tv_subReactionContent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-8dp"
+            android:lineSpacingExtra="2dp"
+            android:textColor="#000000"
+            android:textSize="15sp"
+            app:ease_chat_item_sender="true"
+            android:layout_alignEnd="@id/bubble"
+            android:layout_alignTop="@id/bubble" />
+
         <LinearLayout
             android:id="@+id/ll_loading"
             android:layout_width="wrap_content"

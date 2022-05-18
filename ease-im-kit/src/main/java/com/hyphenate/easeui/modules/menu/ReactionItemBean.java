@@ -1,5 +1,7 @@
 package com.hyphenate.easeui.modules.menu;
 
+import androidx.annotation.NonNull;
+
 public class ReactionItemBean {
     private String identityCode;
     private int icon;
@@ -29,6 +31,7 @@ public class ReactionItemBean {
         this.emojiText = emojiText;
     }
 
+    @NonNull
     @Override
     public String toString() {
         return "ReactionItemBean{" +
@@ -38,4 +41,5 @@ public class ReactionItemBean {
                 '}';
     }
 }
+
 

@@ -561,6 +561,7 @@ public class EaseChatLayout extends RelativeLayout implements IChatLayout, IHand
 
     @Override
     public void onReactionChanged(List<EMMessageReactionChange> messageReactionChangeList) {
+        EMLog.i(TAG, "onReactionChanged");
         for (EMMessageReactionChange reactionChange : messageReactionChangeList) {
             if (conversationId.equals(reactionChange.getConversionID())) {
                 refreshMessage(EMClient.getInstance().chatManager().getMessage(reactionChange.getMessageId()));

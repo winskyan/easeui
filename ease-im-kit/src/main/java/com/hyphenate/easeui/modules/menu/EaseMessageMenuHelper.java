@@ -19,6 +19,7 @@ import android.view.ViewTreeObserver;
 import android.view.WindowManager;
 import android.widget.ImageView;
 import android.widget.PopupWindow;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 
 import androidx.annotation.NonNull;
@@ -27,18 +28,18 @@ import androidx.recyclerview.widget.GridLayoutManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.hyphenate.chat.EMClient;
 import com.hyphenate.chat.EMMessageReaction;
+import com.hyphenate.easeui.EaseIM;
 import com.hyphenate.easeui.R;
 import com.hyphenate.easeui.adapter.EaseBaseRecyclerViewAdapter;
 import com.hyphenate.easeui.domain.EaseEmojicon;
+import com.hyphenate.easeui.domain.EaseReactionOptions;
 import com.hyphenate.easeui.interfaces.OnItemClickListener;
 import com.hyphenate.easeui.model.EaseMessageMenuData;
 import com.hyphenate.easeui.utils.EaseCommonUtils;
 import com.hyphenate.util.EMLog;
 
 import java.util.ArrayList;
-
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
@@ -69,14 +70,18 @@ public class EaseMessageMenuHelper {
     private View mTopView;
     private ImageView mMessageView;
     private View mPopupView;
+    private View mBottomView;
 
-    Map<String, Boolean> mEmojiContainCurrentUserMap = new HashMap<>();
+    private final Map<String, Boolean> mEmojiContainCurrentUserMap = new HashMap<>();
+
+    private boolean mIsShowReactionView;
 
     public EaseMessageMenuHelper() {
         if (mPopupWindow != null) {
             mPopupWindow.dismiss();
         }
         clear();
+        mIsShowReactionView = true;
     }
 
     /**
@@ -123,10 +128,11 @@ public class EaseMessageMenuHelper {
         mReactionListView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
-                mReactionListHeight = mReactionListView.getHeight();
+                if (View.VISIBLE == mReactionListView.getVisibility()) {
+                    mReactionListHeight = mReactionListView.getHeight();
+                }
             }
         });
-
 
         mMenuListView = mLayout.findViewById(R.id.rv_menu_list);
         mMenuListView.setLayoutManager(new LinearLayoutManager(context));
@@ -161,6 +167,9 @@ public class EaseMessageMenuHelper {
                 return true;
             }
         });
+
+        mBottomView = mLayout.findViewById(R.id.bottom_view);
+
     }
 
     public void clear() {
@@ -169,34 +178,24 @@ public class EaseMessageMenuHelper {
         mMenuItemMap.clear();
         mReactionListHeight = 0;
         mMenuListHeight = 0;
-        if (null != mEmojiContainCurrentUserMap) {
-            mEmojiContainCurrentUserMap.clear();
-        }
     }
 
     public void setMessageReactions(List<EMMessageReaction> messageReactions) {
+        mEmojiContainCurrentUserMap.clear();
         if (null == messageReactions) {
+            mReactionAdapter.setEmojiContainCurrentUserMap(null);
             return;
         }
-        mEmojiContainCurrentUserMap.clear();
 
-        String currentUser = EMClient.getInstance().getCurrentUser();
-        String reaction;
-        boolean containCurrentUser;
         for (EMMessageReaction messageReaction : messageReactions) {
-            containCurrentUser = false;
-            List<String> userList = messageReaction.getUserList();
-            reaction = messageReaction.getReaction();
-            for (String user : userList) {
-                if (user.equals(currentUser)) {
-                    containCurrentUser = true;
-                    break;
-                }
-            }
-            mEmojiContainCurrentUserMap.put(reaction, containCurrentUser);
+            mEmojiContainCurrentUserMap.put(messageReaction.getReaction(), messageReaction.isAddedBySelf());
         }
 
         mReactionAdapter.setEmojiContainCurrentUserMap(mEmojiContainCurrentUserMap);
+    }
+
+    public void setIsShowReactionView(boolean isShowReactionView) {
+        this.mIsShowReactionView = isShowReactionView;
     }
 
     public void setOutsideTouchable(boolean touchable) {
@@ -217,20 +216,34 @@ public class EaseMessageMenuHelper {
         initFrequentlyReactionData();
         initMenuData();
 
-        //根据条目选择spanCount
-        if (mReactionItems.size() <= 0) {
-            EMLog.e(TAG, "reaction span count should be at least 1. Provided " + mReactionItems.size());
-            return;
+
+        EaseReactionOptions reactionOptions = EaseIM.getInstance().getReactionOptions();
+        if (null != reactionOptions && reactionOptions.isOpen()) {
+            if (mReactionItems.size() <= 0) {
+                EMLog.e(TAG, "reaction span count should be at least 1. Provided " + mReactionItems.size());
+                return;
+            }
+            if (!mIsShowReactionView) {
+                mReactionListView.setVisibility(View.GONE);
+            }
+        } else {
+            mReactionListView.setVisibility(View.GONE);
         }
 
         if (mMenuItems.size() <= 0) {
             Log.e(TAG, "menu span count should be at least 1. Provided " + mMenuItems.size());
             return;
         }
+
         final float screenWidth = EaseCommonUtils.getScreenInfo(mContext)[0];
         final float screenHeight = EaseCommonUtils.getScreenInfo(mContext)[1];
+        final int navBarHeight = mPopupWindow.getNavigationBarHeight(mContext);
         final int minPopupWindowHeight = (int) screenHeight * 2 / 5;
-        final int navBarHeight = mPopupWindow.getNavBarHeight(mContext);
+
+        RelativeLayout.LayoutParams params = (RelativeLayout.LayoutParams) mBottomView.getLayoutParams();
+        params.height = navBarHeight;
+        mBottomView.setLayoutParams(params);
+
         mPopupWindow.showAtLocation(parent, Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 0);
 
         mPopupWindow.setViewLayoutParams(mPopupView, (int) screenWidth, minPopupWindowHeight);
@@ -291,10 +304,11 @@ public class EaseMessageMenuHelper {
     }
 
     private void showAllReactionEmoticon() {
+        clear();
         if (null != mMenuListView) {
             mMenuListView.setVisibility(View.GONE);
         }
-        clear();
+
         initAllReactionData();
         mMenuAdapter.setData(mMenuItems);
     }
@@ -416,7 +430,6 @@ public class EaseMessageMenuHelper {
         }
     }
 
-
     /**
      * 设置条目点击事件
      *
@@ -460,10 +473,6 @@ public class EaseMessageMenuHelper {
 
     private static class ReactionAdapter extends EaseBaseRecyclerViewAdapter<ReactionItemBean> {
         private static Map<String, Boolean> mDataMap;
-
-        public ReactionAdapter() {
-            mDataMap = new HashMap<>();
-        }
 
         public void setEmojiContainCurrentUserMap(Map<String, Boolean> emojiContainCurrentUserMap) {
             mDataMap = emojiContainCurrentUserMap;
@@ -584,4 +593,3 @@ public class EaseMessageMenuHelper {
         }
     }
 }
-

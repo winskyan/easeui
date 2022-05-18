@@ -5,11 +5,6 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-/**
- * 本LayoutManager提供了类似RecycleView 横向布局，自动换行效果
- * <p>
- * 参考博文：https://blog.csdn.net/kaolagirl/article/details/118678568
- */
 public class RecyclerViewFlowLayoutManager extends RecyclerView.LayoutManager {
     @Override
     public RecyclerView.LayoutParams generateDefaultLayoutParams() {
@@ -34,16 +29,15 @@ public class RecyclerViewFlowLayoutManager extends RecyclerView.LayoutManager {
             int height = getDecoratedMeasuredHeight(view);
 
             curLineWidth += width;
-            if (curLineWidth <= sumWidth) {//不需要换行
+            if (curLineWidth <= sumWidth) {
                 layoutDecorated(view, curLineWidth - width, curLineTop, curLineWidth, curLineTop + height);
-                //比较当前行多有item的最大高度
                 lastLineMaxHeight = Math.max(lastLineMaxHeight, height);
-            } else {//换行
+            } else {
                 curLineWidth = width;
                 if (lastLineMaxHeight == 0) {
                     lastLineMaxHeight = height;
                 }
-                //记录当前行top
+
                 curLineTop += lastLineMaxHeight;
 
                 layoutDecorated(view, 0, curLineTop, width, curLineTop + height);

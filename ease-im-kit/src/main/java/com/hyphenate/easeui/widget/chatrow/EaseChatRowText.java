@@ -44,9 +44,6 @@ public class EaseChatRowText extends EaseChatRow {
         translationContentView = (TextView) findViewById(R.id.tv_subContent);
         translationStatusView = (ImageView) findViewById(R.id.translation_status);
         translationContainer = (View) findViewById(R.id.subBubble);
-
-        reactionContentView = findViewById(R.id.tv_subReactionContent);
-        reactionContainerGroup = findViewById(R.id.reaction_group);
     }
 
     @Override
@@ -89,7 +86,6 @@ public class EaseChatRowText extends EaseChatRow {
             } else {
                 translationContainer.setVisibility(View.GONE);
             }
-            onSetupReactionView();
         }
     }
 

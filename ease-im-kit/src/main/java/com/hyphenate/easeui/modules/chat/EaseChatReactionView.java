@@ -10,21 +10,28 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.LinearLayout;
 import android.widget.PopupWindow;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.hyphenate.chat.EMMessage;
+import com.hyphenate.chat.EMMessageReaction;
 import com.hyphenate.easeui.R;
 import com.hyphenate.easeui.adapter.ReactionGridAdapter;
+import com.hyphenate.easeui.domain.EaseEmojicon;
 import com.hyphenate.easeui.domain.EaseReactionEmojiconEntity;
 import com.hyphenate.easeui.interfaces.OnItemClickListener;
 import com.hyphenate.easeui.interfaces.OnItemLongClickListener;
+import com.hyphenate.easeui.model.EaseMessageMenuData;
 import com.hyphenate.easeui.modules.menu.EaseMessageMenuHelper;
 import com.hyphenate.easeui.modules.menu.EaseMessageMenuPopupWindow;
 import com.hyphenate.easeui.modules.menu.EaseMessageReactionHelper;
 import com.hyphenate.easeui.widget.chatextend.RecyclerViewFlowLayoutManager;
 import com.hyphenate.easeui.widget.EaseRecyclerView;
+import com.hyphenate.util.EMLog;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,8 +42,12 @@ public class EaseChatReactionView extends LinearLayout implements OnItemClickLis
     private final ReactionGridAdapter mListAdapter;
     private List<EaseReactionEmojiconEntity> mData;
     private OnReactionItemListener mListener;
-    private static final int MAX_REACTION_SHOW = 4;
+    private static final int MAX_REACTION_SHOW = 5;
     private String mMsgId;
+    private final TextView countTv;
+    private EaseMessageReactionHelper mReactionHelper;
+    private final Context mContext;
+    private final ConstraintLayout mLayout;
 
     public EaseChatReactionView(Context context) {
         this(context, null);
@@ -49,18 +60,21 @@ public class EaseChatReactionView extends LinearLayout implements OnItemClickLis
     @SuppressLint("ClickableViewAccessibility")
     public EaseChatReactionView(Context context, @Nullable AttributeSet attrs, int defStyleAttr) {
         super(context, attrs, defStyleAttr);
-        LayoutInflater.from(context).inflate(R.layout.ease_widget_reaction_layout, this);
+        mContext = context;
         TypedArray typedArray = context.obtainStyledAttributes(attrs, R.styleable.EaseChatReactionView);
         boolean isSender = typedArray.getBoolean(R.styleable.EaseChatReactionView_ease_chat_item_sender, false);
         typedArray.recycle();
 
-        EaseRecyclerView reactionList;
         if (isSender) {
-            reactionList = findViewById(R.id.rv_list_sender);
+            LayoutInflater.from(context).inflate(R.layout.ease_widget_reaction_sender_layout, this);
         } else {
-            reactionList = findViewById(R.id.rv_list_received);
+            LayoutInflater.from(context).inflate(R.layout.ease_widget_reaction_received_layout, this);
         }
-        reactionList.setVisibility(View.VISIBLE);
+
+        mLayout = findViewById(R.id.ll_reaction_container);
+
+        EaseRecyclerView reactionList = findViewById(R.id.rv_list);
+        countTv = findViewById(R.id.count);
 
         RecyclerViewFlowLayoutManager ms = new RecyclerViewFlowLayoutManager();
         reactionList.setLayoutManager(ms);
@@ -69,7 +83,7 @@ public class EaseChatReactionView extends LinearLayout implements OnItemClickLis
         mListAdapter.setOnItemLongClickListener(this);
         mListAdapter.setOnItemClickListener(this);
         reactionList.setAdapter(mListAdapter);
-        reactionList.addItemDecoration(new EaseChatReactionView.ReactionSpacesItemDecoration((int) EaseMessageMenuHelper.dip2px(context, 5)));
+        reactionList.addItemDecoration(new ReactionSpacesItemDecoration((int) EaseMessageMenuHelper.dip2px(context, 5)));
 
         reactionList.setOnTouchListener(new OnTouchListener() {
             @Override
@@ -78,6 +92,12 @@ public class EaseChatReactionView extends LinearLayout implements OnItemClickLis
                     showMessageReaction();
                 }
                 return true;
+            }
+        });
+        countTv.setOnClickListener(new OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showMessageReaction();
             }
         });
 
@@ -94,9 +114,12 @@ public class EaseChatReactionView extends LinearLayout implements OnItemClickLis
 
 
     private void showMessageReaction() {
-        EaseMessageReactionHelper reactionHelper = new EaseMessageReactionHelper();
-        reactionHelper.setReactionData(mData, mMsgId);
-        reactionHelper.init(getContext(), new OnReactionItemListener() {
+        if (null != mReactionHelper) {
+            mReactionHelper.dismiss();
+        }
+        mReactionHelper = new EaseMessageReactionHelper();
+        mReactionHelper.setReactionData(mData, mMsgId);
+        mReactionHelper.init(getContext(), new OnReactionItemListener() {
             @Override
             public void removeReaction(EaseReactionEmojiconEntity reactionEntity) {
                 if (null != mListener) {
@@ -111,36 +134,80 @@ public class EaseChatReactionView extends LinearLayout implements OnItemClickLis
                 }
             }
         });
-        reactionHelper.setOutsideTouchable(true);
-        reactionHelper.setOnPopupMenuDismissListener(new EaseMessageMenuPopupWindow.OnPopupWindowDismissListener() {
+        mReactionHelper.setOutsideTouchable(true);
+        mReactionHelper.setOnPopupMenuDismissListener(new EaseMessageMenuPopupWindow.OnPopupWindowDismissListener() {
             @Override
             public void onDismiss(PopupWindow menu) {
-
+                mReactionHelper = null;
             }
         });
-        reactionHelper.show(this, this);
+        mReactionHelper.show(this, this);
     }
 
-    public void updateData(List<EaseReactionEmojiconEntity> data, String msgId) {
+    public void updateMessageInfo(EMMessage message) {
+        if (null == message) {
+            EMLog.e(TAG, "message is null, don't setup reaction view");
+            return;
+        }
+        //default gone
+        mLayout.setVisibility(GONE);
+
+        List<EMMessageReaction> messageReactions = message.getMessageReaction();
+        if (null != messageReactions && messageReactions.size() > 0) {
+            List<EaseReactionEmojiconEntity> list = new ArrayList<>(messageReactions.size());
+            EaseReactionEmojiconEntity entity;
+            EaseEmojicon emojicon;
+            for (EMMessageReaction messageReaction : messageReactions) {
+                entity = new EaseReactionEmojiconEntity();
+                emojicon = EaseMessageMenuData.getReactionDataMap().get(messageReaction.getReaction());
+                if (emojicon != null) {
+                    entity.setEmojicon(emojicon);
+                    entity.setCount(messageReaction.getUserCount());
+                    entity.setUserList(messageReaction.getUserList());
+                    entity.setAddedBySelf(messageReaction.isAddedBySelf());
+                    list.add(entity);
+                }
+            }
+            if (0 != list.size()) {
+                mLayout.setVisibility(VISIBLE);
+                updateData(list, message.getMsgId());
+            }
+        }
+    }
+
+    private void updateData(List<EaseReactionEmojiconEntity> data, String msgId) {
         mData = new ArrayList<>(data);
         mMsgId = msgId;
-        int totalNum = 0;
+
+        int totalNumber = 0;
         for (EaseReactionEmojiconEntity entity : mData) {
-            totalNum += entity.getCount();
+            totalNumber += entity.getCount();
         }
-        if (totalNum > MAX_REACTION_SHOW) {
-            if (mData.size() > 99) {
-                ReactionGridAdapter.setMoreTxt("... 99+");
-            } else {
-                ReactionGridAdapter.setMoreTxt("...");
-            }
-            List<EaseReactionEmojiconEntity> dataList = new ArrayList<>(MAX_REACTION_SHOW + 1);
-            for (int i = 0; i < MAX_REACTION_SHOW + 1; i++) {
+
+        countTv.setVisibility(VISIBLE);
+        if (mData.size() > MAX_REACTION_SHOW) {
+            List<EaseReactionEmojiconEntity> dataList = new ArrayList<>(MAX_REACTION_SHOW - 1);
+            for (int i = 0; i < MAX_REACTION_SHOW - 1; i++) {
                 dataList.add(mData.get(i));
             }
             mListAdapter.setData(dataList);
+
+            if (totalNumber > 99) {
+                countTv.setText(mContext.getResources().getString(R.string.ease_number_point_ninety_nine_more));
+            } else {
+                countTv.setText(mContext.getString(R.string.ease_number_more, totalNumber));
+            }
         } else {
             mListAdapter.setData(mData);
+            if (totalNumber > 99) {
+                countTv.setText(mContext.getResources().getString(R.string.ease_number_ninety_nine_more));
+            } else {
+                if (1 == totalNumber) {
+                    countTv.setVisibility(GONE);
+                } else {
+                    countTv.setText(String.valueOf(totalNumber));
+                }
+            }
         }
     }
 
@@ -183,4 +250,3 @@ public class EaseChatReactionView extends LinearLayout implements OnItemClickLis
         }
     }
 }
-

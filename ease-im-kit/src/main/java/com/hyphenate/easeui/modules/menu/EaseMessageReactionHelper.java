@@ -42,7 +42,7 @@ import java.util.List;
 public class EaseMessageReactionHelper {
     private static final String TAG = EaseMessageReactionHelper.class.getSimpleName();
 
-    private static final int USER_LIST_PAGE_SIZE = 1;
+    private static final int USER_LIST_PAGE_SIZE = 30;
 
     public enum LoadMoreStatus {
         IS_LOADING, HAS_MORE, NO_MORE_DATA
@@ -100,6 +100,7 @@ public class EaseMessageReactionHelper {
         mLayout = View.inflate(context.getApplicationContext(), R.layout.ease_layout_message_reaction_popupwindow, null);
         mPopupWindow.setContentView(mLayout);
         mPopupWindow.setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
+        mPopupWindow.setBackgroundAlpha(0.3f);
 
         mTopView = mLayout.findViewById(R.id.top_view);
         mMessageView = mLayout.findViewById(R.id.message_view);
@@ -200,6 +201,9 @@ public class EaseMessageReactionHelper {
     }
 
     public void setReactionData(List<EaseReactionEmojiconEntity> data, String msgId) {
+        if (null == data || TextUtils.isEmpty(msgId)) {
+            return;
+        }
         mReactionData = new ArrayList<>(data);
         mMsgId = msgId;
     }
@@ -213,7 +217,6 @@ public class EaseMessageReactionHelper {
         showPre();
         initReactionData();
 
-        //根据条目选择spanCount
         if (mReactionData.size() <= 0) {
             EMLog.e(TAG, "reaction span count should be at least 1. Provided " + mReactionData.size());
             return;
@@ -222,11 +225,11 @@ public class EaseMessageReactionHelper {
         final float screenWidth = EaseCommonUtils.getScreenInfo(mContext)[0];
         final float screenHeight = EaseCommonUtils.getScreenInfo(mContext)[1];
         final int minPopupWindowHeight = (int) screenHeight * 2 / 5;
-        final int maxPopupWindowHeight = (int) screenHeight - mPopupWindow.getNavBarHeight(mContext);
+        final int maxPopupWindowHeight = (int) screenHeight - mPopupWindow.getNavigationBarHeight(mContext);
         mPopupWindow.showAtLocation(v.getRootView(), Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL, 0, 0);
         mPopupWindow.setViewLayoutParams(mPopupView, (int) screenWidth, minPopupWindowHeight);
 
-        mLayout.setOnTouchListener(new View.OnTouchListener() {
+        mPopupView.setOnTouchListener(new View.OnTouchListener() {
             int orgX, orgY;
             int offsetX, offsetY;
             int popupWindowCurHeight = minPopupWindowHeight;
@@ -262,8 +265,8 @@ public class EaseMessageReactionHelper {
     private void initReactionData() {
         mReactionAdapter.setData(mReactionData);
         mCurrentEaseReactionBegin = "0";
-
         mCurrentEaseReactionEntity = mReactionData.get(0);
+
         mCurrentEaseReactionEntity.getUserList().clear();
         mReactionAdapter.setCurrentEntity(mCurrentEaseReactionEntity);
         asyncReactionUserList();
@@ -274,47 +277,46 @@ public class EaseMessageReactionHelper {
         if (TextUtils.isEmpty(mMsgId) || TextUtils.isEmpty(mCurrentEaseReactionEntity.getEmojicon().getIdentityCode())) {
             return;
         }
-        EMCursorResult<Object> cursor = new EMCursorResult<>();
-        EMClient.getInstance().chatManager().asyncGetReactionDetail(mMsgId, mCurrentEaseReactionEntity.getEmojicon().getIdentityCode(), mCurrentEaseReactionBegin,
-                USER_LIST_PAGE_SIZE, new EMValueCallBack<EMCursorResult<EMMessageReaction>>() {
+        EMClient.getInstance().chatManager().asyncGetReactionDetail(mMsgId, mCurrentEaseReactionEntity.getEmojicon().getIdentityCode(),
+                mCurrentEaseReactionBegin, USER_LIST_PAGE_SIZE, new EMValueCallBack<EMCursorResult<EMMessageReaction>>() {
                     @Override
-                    public void onSuccess(EMCursorResult<EMMessageReaction> value) {
-                        mCurrentEaseReactionBegin = value.getCursor();
-                        List<String> userList = mCurrentEaseReactionEntity.getUserList();
-                        List<EMMessageReaction> list = value.getData();
-
-                        EMMessageReaction emMessageReaction = null;
-                        if (null != list && list.size() >= 1) {
-                            emMessageReaction = list.get(0);
-                        }
-                        if (null != emMessageReaction) {
-                            userList.addAll(emMessageReaction.getUserList());
-                        }
-                        if (mCurrentEaseReactionEntity.getCount() > userList.size() && !TextUtils.isEmpty(mCurrentEaseReactionBegin)) {
-                            mLoadMoreStatus = LoadMoreStatus.HAS_MORE;
-                        } else {
-                            mLoadMoreStatus = LoadMoreStatus.NO_MORE_DATA;
-                        }
-                        mCurrentEaseReactionEntity.setUserList(userList);
-                        mUserListView.post(new Runnable() {
+                    public void onSuccess(EMCursorResult<EMMessageReaction> messageReactionCursorResult) {
+                        mMainThreadHandler.post(new Runnable() {
                             @Override
                             public void run() {
-                                initReactionUserListData();
+                                if (null != messageReactionCursorResult && null != mCurrentEaseReactionEntity) {
+                                    try {
+                                        mCurrentEaseReactionBegin = messageReactionCursorResult.getCursor();
+                                        List<String> userList = mCurrentEaseReactionEntity.getUserList();
+                                        if (null != messageReactionCursorResult.getData() && messageReactionCursorResult.getData().size() >= 1) {
+                                            userList.addAll(messageReactionCursorResult.getData().get(0).getUserList());
+                                            if (!TextUtils.isEmpty(mCurrentEaseReactionBegin) && mCurrentEaseReactionEntity.getCount() > userList.size()) {
+                                                mLoadMoreStatus = LoadMoreStatus.HAS_MORE;
+                                            } else {
+                                                mLoadMoreStatus = LoadMoreStatus.NO_MORE_DATA;
+                                            }
+                                            mCurrentEaseReactionEntity.setUserList(userList);
+                                            initReactionUserListData();
+                                        }
+                                    } catch (Exception e) {
+                                        e.printStackTrace();
+                                    }
+
+                                }
                             }
                         });
                     }
 
                     @Override
-                    public void onError(int error, String errorMsg) {
+                    public void onError(int i, String s) {
 
                     }
                 });
     }
 
     private void initReactionUserListData() {
-        EMLog.i(TAG, "reaction mCurrentEaseReactionBegin=" + mCurrentEaseReactionBegin + "," + mCurrentEaseReactionEntity.toString());
         List<String> userList = new ArrayList<>(mCurrentEaseReactionEntity.getUserList());
-        if (true) {
+        if (mCurrentEaseReactionEntity.isAddedBySelf()) {
             userList.remove(EMClient.getInstance().getCurrentUser());
             userList.add(0, EMClient.getInstance().getCurrentUser());
         }
@@ -334,7 +336,7 @@ public class EaseMessageReactionHelper {
 
 
     /**
-     * 设置条目点击事件
+     * Set item click event
      *
      * @param listener
      */
@@ -343,7 +345,7 @@ public class EaseMessageReactionHelper {
     }
 
     /**
-     * 监听PopupMenu dismiss事件
+     * Listen to the PopupMenu dismiss event
      *
      * @param listener
      */
@@ -456,7 +458,7 @@ public class EaseMessageReactionHelper {
 
             @Override
             public void setData(String item, int position) {
-                tvUserName.setText(item);
+                EaseUserUtils.setUserNick(item, tvUserName);
                 if (EMClient.getInstance().getCurrentUser().equals(item)) {
                     ivDelete.setVisibility(View.VISIBLE);
                 } else {

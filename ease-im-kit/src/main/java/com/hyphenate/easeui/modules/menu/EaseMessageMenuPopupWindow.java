@@ -1,25 +1,22 @@
 package com.hyphenate.easeui.modules.menu;
 
-import android.animation.ObjectAnimator;
-import android.animation.ValueAnimator;
 import android.app.Activity;
 import android.content.Context;
 import android.content.res.Resources;
-import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
-import android.os.Build;
+import android.util.DisplayMetrics;
+import android.view.Display;
 import android.view.KeyEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.view.animation.Animation;
-import android.view.animation.TranslateAnimation;
 import android.widget.PopupWindow;
 
 import com.hyphenate.easeui.R;
-import com.hyphenate.easeui.utils.EaseCommonUtils;
+
+import java.lang.reflect.Method;
 
 public class EaseMessageMenuPopupWindow extends PopupWindow {
 
@@ -34,10 +31,10 @@ public class EaseMessageMenuPopupWindow extends PopupWindow {
     }
 
     /**
-     * 第二个参数为改变背景色
+     * The second parameter is to change the background color
      *
      * @param context
-     * @param closeChangeBg 是否改变背景色
+     * @param closeChangeBg whether to change the background color
      */
     public EaseMessageMenuPopupWindow(Context context, boolean closeChangeBg) {
         this.mContext = context;
@@ -46,7 +43,7 @@ public class EaseMessageMenuPopupWindow extends PopupWindow {
     }
 
     /**
-     * 设置背景透明度
+     * set background transparency
      *
      * @param alpha
      */
@@ -74,12 +71,12 @@ public class EaseMessageMenuPopupWindow extends PopupWindow {
     }
 
     /**
-     * 初始化BasePopupWindow的一些信息
+     * Some information to initialize BasePopupWindow
      */
     private void initBasePopupWindow() {
         setHeight(ViewGroup.LayoutParams.MATCH_PARENT);
         setWidth(ViewGroup.LayoutParams.MATCH_PARENT);
-        setOutsideTouchable(true);  //默认设置outside点击无响应
+        setOutsideTouchable(true);
         setFocusable(true);
         setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_RESIZE);
         setAnimationStyle(R.style.message_menu_popup_window_anim_style);
@@ -129,7 +126,7 @@ public class EaseMessageMenuPopupWindow extends PopupWindow {
     }
 
     /**
-     * 为窗体添加outside点击事件
+     * Add an outside click event to the form
      */
     private void addKeyListener(View contentView) {
         if (contentView != null) {
@@ -153,7 +150,7 @@ public class EaseMessageMenuPopupWindow extends PopupWindow {
     }
 
     /**
-     * 控制窗口背景的不透明度
+     * Controls the opacity of the window background
      */
     private void setWindowBackgroundAlpha(float alpha) {
         Window window = ((Activity) getContext()).getWindow();
@@ -168,6 +165,39 @@ public class EaseMessageMenuPopupWindow extends PopupWindow {
         int resourceId = resources.getIdentifier("navigation_bar_height", "dimen", "android");
         if (resourceId > 0) {
             return resources.getDimensionPixelSize(resourceId);
+        }
+        return 0;
+    }
+
+    public float getScreenWidth(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics dm = new DisplayMetrics();
+        display.getRealMetrics(dm);
+        return dm.widthPixels;
+    }
+
+    public float getScreenHeight(Context context) {
+        WindowManager wm = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = wm.getDefaultDisplay();
+        DisplayMetrics dm = new DisplayMetrics();
+        display.getRealMetrics(dm);
+        return dm.heightPixels;
+    }
+
+    public int getNavigationBarHeight(Context context) {
+        WindowManager windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        Display display = windowManager.getDefaultDisplay();
+        DisplayMetrics dm = new DisplayMetrics();
+        try {
+            @SuppressWarnings("rawtypes")
+            Class c = Class.forName("android.view.Display");
+            @SuppressWarnings("unchecked")
+            Method method = c.getMethod("getRealMetrics", DisplayMetrics.class);
+            method.invoke(display, dm);
+            return dm.heightPixels - display.getHeight();
+        } catch (Exception e) {
+            e.printStackTrace();
         }
         return 0;
     }

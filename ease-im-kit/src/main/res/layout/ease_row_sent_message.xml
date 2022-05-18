@@ -51,37 +51,17 @@
                 android:textSize="15sp" />
         </RelativeLayout>
 
-        <androidx.constraintlayout.widget.ConstraintLayout
-            android:id="@+id/subReactionBubble"
-            android:layout_width="match_parent"
+        <com.hyphenate.easeui.modules.chat.EaseChatReactionView
+            android:id="@+id/tv_subReactionContent"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_alignTop="@id/bubble"
-            android:layout_marginTop="-10dp"
-            android:layout_marginEnd="@dimen/margin_chat_activity"
-            android:layout_toStartOf="@id/iv_userhead">
-
-            <androidx.constraintlayout.widget.Group
-                android:id="@+id/reaction_group"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:visibility="visible"
-                app:constraint_referenced_ids="tv_subReactionContent" />
-
-            <com.hyphenate.easeui.modules.chat.EaseChatReactionView
-                android:id="@+id/tv_subReactionContent"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="30dp"
-                android:lineSpacingExtra="2dp"
-                android:maxWidth="225.0dip"
-                android:minHeight="@dimen/ease_chat_text_min_height"
-                android:textColor="#000000"
-                android:textSize="15sp"
-                app:ease_chat_item_sender="true"
-                app:layout_constraintEnd_toEndOf="parent"
-                app:layout_constraintStart_toStartOf="parent"
-                app:layout_constraintTop_toTopOf="parent" />
-        </androidx.constraintlayout.widget.ConstraintLayout>
+            android:layout_marginTop="-12dp"
+            android:lineSpacingExtra="2dp"
+            android:textColor="#000000"
+            android:textSize="15sp"
+            app:ease_chat_item_sender="true"
+            android:layout_alignEnd="@id/bubble"
+            android:layout_alignTop="@id/bubble" />
 
        <!--  <TextView
             android:id="@+id/tv_userid"

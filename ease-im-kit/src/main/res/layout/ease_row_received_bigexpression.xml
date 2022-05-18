@@ -2,9 +2,10 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:gravity="center_horizontal"
     android:orientation="vertical"
-    android:paddingTop="13dp" >
+    android:paddingTop="13dp">
 
     <TextView
         android:id="@+id/timestamp"
@@ -40,6 +41,17 @@
                 />
 
         </RelativeLayout>
+
+        <com.hyphenate.easeui.modules.chat.EaseChatReactionView
+            android:id="@+id/tv_subReactionContent"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="-2dp"
+            android:textColor="#000000"
+            android:textSize="15sp"
+            app:ease_chat_item_sender="false"
+            android:layout_alignStart="@id/bubble"
+            android:layout_alignTop="@id/bubble" />
 
          <TextView
             android:id="@+id/tv_userid"
